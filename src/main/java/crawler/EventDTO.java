@@ -1,9 +1,11 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class EventDTO {
+
+public class EventDTO implements ContentDTO {
     private List eventListEdited;
     private List eventListRaw;
 
@@ -12,12 +14,25 @@ public class EventDTO {
         this.eventListRaw = new ArrayList();
     }
 
-    public List getEventListEdited() {
-        return eventListEdited;
+    @Override
+    public void saveRawData(List dataToSave) {
+        eventListRaw = Collections.unmodifiableList(dataToSave);
     }
 
-    public List getEventListRaw() {
-        return eventListRaw;
+    @Override
+    public void saveTransformedData(List dataToSave) {
+        eventListEdited = Collections.unmodifiableList(dataToSave);
+
+    }
+
+    @Override
+    public List getRawData() {
+        return Collections.unmodifiableList(eventListRaw);
+    }
+
+    @Override
+    public List getResultOfTransformation() {
+        return Collections.unmodifiableList(eventListEdited);
     }
 
 }

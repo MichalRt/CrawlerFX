@@ -1,9 +1,7 @@
 package FXJava;
 
-import crawler.Crawler;
-import crawler.EventDTO;
 import crawler.FileEditor;
-import crawler.HttpStreamToObjectTransformation;
+import crawler.run.Run;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,9 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
+import java.util.List;
 
 
 public class Main extends Application implements EventHandler<ActionEvent> {
@@ -28,7 +24,7 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     private GridPane grid;
     private Text formTitle, notification;
     private TextArea loadedFile;
-    private Label urlLabel,fileNameLabel, notificationLabel,fileContentLabel;
+    private Label urlLabel, fileNameLabel, notificationLabel, fileContentLabel;
     private TextField urlInput, fileNameInput;
     private Button sendButton;
     private Scene scene;
@@ -36,48 +32,47 @@ public class Main extends Application implements EventHandler<ActionEvent> {
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("Crawler URL");
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(25,25,25,25));
+        grid.setPadding(new Insets(25, 25, 25, 25));
 
-        formTitle = new Text("Welcome");
-        grid.add(formTitle,0,0,2,1);
-
+        formTitle = new Text("Crawler");
+        grid.add(formTitle, 0, 0, 2, 1);
 
         urlLabel = new Label("Input URL");
-        grid.add(urlLabel,0,1);
+        grid.add(urlLabel, 0, 1);
 
         urlInput = new TextField();
-        grid.add(urlInput,1,1);
+        grid.add(urlInput, 1, 1);
 
         fileNameLabel = new Label("File name");
-        grid.add(fileNameLabel,0,2);
+        grid.add(fileNameLabel, 0, 2);
 
         fileNameInput = new TextField();
-        grid.add(fileNameInput,1,2);
+        grid.add(fileNameInput, 1, 2);
 
         sendButton = new Button("Download data!!!");
         sendButton.setOnAction(this);
 
-        grid.add(sendButton,1,4);
+        grid.add(sendButton, 1, 4);
 
         loadedFile = new TextArea();
-        grid.add(loadedFile,1,8);
+        grid.add(loadedFile, 1, 8);
 
         fileContentLabel = new Label("File Content");
-        grid.add(fileContentLabel,0,8);
+        grid.add(fileContentLabel, 0, 8);
 
         notification = new Text();
-        grid.add(notification,1,5);
+        grid.add(notification, 1, 5);
 
         notificationLabel = new Label("STATUS");
-        grid.add(notificationLabel,0,5);
+        grid.add(notificationLabel, 0, 5);
 
-        scene = new Scene(grid,800,275);
+        scene = new Scene(grid, 800, 475);
 
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -91,28 +86,19 @@ public class Main extends Application implements EventHandler<ActionEvent> {
     @Override
     public void handle(ActionEvent event) {
 
-        notification.setText("IN PROGRESS");
-        System.out.println(event.getSource().toString());
-        EventDTO dto= new EventDTO();
-        try {
-            Crawler robot = new Crawler(urlInput.getText());
-            new HttpStreamToObjectTransformation(robot.returnInputStream(), dto.getEventListEdited(), dto.getEventListRaw());
-            FileEditor.saveToFile(fileNameInput.getText(), dto.getEventListEdited());
+        Run launch = new Run();
+        launch.run(urlInput, fileNameInput, notification);
 
-            notification.setText(String.valueOf(robot.getResponseCode()));
+        displayListContent(FileEditor.readFile(fileNameInput.getText()));
+    }
 
-            ArrayList arrayList = FileEditor.readFile(fileNameInput.getText());
-            loadedFile.setText(arrayList.toString());
-        } catch (MalformedURLException e) {
-            System.out.println("Malformed URL: " + e.getMessage());
-            notification.setText("URL ERROR");
-
-            e.printStackTrace();
-
-        } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
-            notification.setText("FILE ERROR");
-            e.printStackTrace();
+    private void displayListContent(List loadedArrayList) {
+        for (Object row : loadedArrayList) {
+            if (row.equals(loadedArrayList.get(loadedArrayList.size() - 1))) {
+                loadedFile.appendText(row.toString());
+            } else {
+                loadedFile.appendText(row + "\n");
+            }
         }
     }
 }
